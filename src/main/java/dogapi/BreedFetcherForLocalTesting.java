@@ -22,4 +22,9 @@ public class BreedFetcherForLocalTesting implements BreedFetcher {
     public int getCallCount() {
         return callCount;
     }
+
+    @Override
+    public List<String> fetchSubBreeds(String breed) throws BreedNotFoundException {
+        return List.of();
+    }
 }
