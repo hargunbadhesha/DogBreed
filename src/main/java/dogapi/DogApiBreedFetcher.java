@@ -77,7 +77,6 @@ public class DogApiBreedFetcher implements BreedFetcher {
             throw new BreedFetcher.BreedNotFoundException("Data processing error for breed: " + breed + ". Details: " + e.getMessage());
         }
     }
-
     @Override
     public List<String> fetchSubBreeds(String breed) throws BreedNotFoundException {
         return List.of();
