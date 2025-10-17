@@ -7,20 +7,19 @@ import java.util.List;
  */
 public interface BreedFetcher {
 
-    List<String> getSubBreeds(String breed) throws BreedNotFoundException;
-
     /**
      * Fetch the list of sub breeds for the given breed.
      * @param breed the breed to fetch sub breeds for
      * @return list of sub breeds for the given breed
      * @throws BreedNotFoundException if the breed does not exist
      */
-    // CRITICAL CHANGE: The method signature must declare the checked exception.
+    List<String> getSubBreeds(String breed) throws BreedNotFoundException;
+
     List<String> fetchSubBreeds(String breed) throws BreedNotFoundException;
 
 
-    // CRITICAL CHANGE: The exception must now extend 'Exception' (instead of RuntimeException)
-    // to become a checked exception.
+    // CRITICAL CHANGE: Extends 'Exception' instead of RuntimeException
+    // to make it a checked exception (Task 4).
     class BreedNotFoundException extends Exception {
         public BreedNotFoundException(String message) {
             super(message);

@@ -15,23 +15,18 @@ import java.util.*;
  * exceptions to align with the requirements of the BreedFetcher interface.
  */
 public class DogApiBreedFetcher implements BreedFetcher {
-    private static final String API_BASE_URL = "https://dog.ceo/api/breed/";
     private final OkHttpClient client = new OkHttpClient();
-
-    @Override
-    public List<String> getSubBreeds(String breed) {
-        return List.of();
-    }
+    private static final String API_BASE_URL = "https://dog.ceo/api/breed/";
 
     /**
      * Fetch the list of sub breeds for the given breed from the dog.ceo API.
      * @param breed the breed to fetch sub breeds for
      * @return list of sub breeds for the given breed
-     * @throws BreedNotFoundException if the breed does not exist (or if the API call fails for any reason)
+     * @throws BreedFetcher.BreedNotFoundException if the breed does not exist (or if the API call fails for any reason)
      */
     @Override
-    public List<String> fetchSubBreeds(String breed) throws BreedFetcher.BreedNotFoundException {
-        // Construct the API URL: https://dog.ceo/api/breed/{breed name}/list
+    public List<String> getSubBreeds(String breed) throws BreedFetcher.BreedNotFoundException {
+        // Build the URL, ensuring the breed name is lowercased for the API endpoint
         String url = API_BASE_URL + breed.toLowerCase() + "/list";
 
         Request request = new Request.Builder()
@@ -40,14 +35,11 @@ public class DogApiBreedFetcher implements BreedFetcher {
 
         try (Response response = client.newCall(request).execute()) {
 
-            // 1. Check for unsuccessful response (e.g., 404)
+            // 1. Check for unsuccessful HTTP status code (e.g., 404)
             if (!response.isSuccessful()) {
-                // The API documentation states that an invalid breed returns a 404,
-                // but any non-successful code should be treated as a failure.
                 throw new BreedFetcher.BreedNotFoundException("API call failed for breed: " + breed + " with code: " + response.code());
             }
 
-            // Ensure the response body exists before reading
             if (response.body() == null) {
                 throw new BreedFetcher.BreedNotFoundException("API call failed for breed: " + breed + ", response body was empty.");
             }
@@ -57,10 +49,10 @@ public class DogApiBreedFetcher implements BreedFetcher {
 
             String status = jsonObject.getString("status");
 
-            // 2. Check the JSON status field for an error
+            // 2. Check the JSON status field for an explicit error message
             if ("error".equals(status)) {
                 String message = jsonObject.getString("message");
-                // "Breed not found (main breed does not exist)" indicates the breed is invalid
+                // Throws the checked exception
                 throw new BreedFetcher.BreedNotFoundException("Breed not found: " + breed + ". API message: " + message);
             }
 
@@ -78,12 +70,16 @@ public class DogApiBreedFetcher implements BreedFetcher {
             throw new BreedFetcher.BreedNotFoundException("Unexpected API response for breed: " + breed);
 
         } catch (IOException e) {
-            // 4. Handle networking/IO issues (e.g., no internet, bad connection)
-            // As per the requirement: all failures are reported as BreedNotFoundException
+            // Handle network/IO issues by wrapping them in the checked exception
             throw new BreedFetcher.BreedNotFoundException("Network or API communication error for breed: " + breed + ". Details: " + e.getMessage());
         } catch (Exception e) {
-            // 5. Catch all other exceptions, e.g., JSON parsing errors
+            // Catch all other errors, like JSON parsing failures
             throw new BreedFetcher.BreedNotFoundException("Data processing error for breed: " + breed + ". Details: " + e.getMessage());
         }
+    }
+
+    @Override
+    public List<String> fetchSubBreeds(String breed) throws BreedNotFoundException {
+        return List.of();
     }
 }

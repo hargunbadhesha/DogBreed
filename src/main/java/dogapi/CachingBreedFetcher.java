@@ -31,22 +31,17 @@ public class CachingBreedFetcher implements BreedFetcher {
         this.cache = new HashMap<>();
     }
 
-    @Override
-    public List<String> getSubBreeds(String breed) {
-        return List.of();
-    }
-
     /**
      * Fetches the list of sub breeds. If the result is already in the cache, it is
      * returned immediately. Otherwise, the underlying fetcher is called, and a
      * successful result is stored in the cache.
-     * * @param breed the breed to fetch sub breeds for
+     * @param breed the breed to fetch sub breeds for
      * @return list of sub breeds for the given breed
      * @throws BreedFetcher.BreedNotFoundException if the breed does not exist
      * (forwarded from the underlying fetcher)
      */
     @Override
-    public List<String> fetchSubBreeds(String breed) throws BreedFetcher.BreedNotFoundException {
+    public List<String> getSubBreeds(String breed) throws BreedFetcher.BreedNotFoundException {
         // 1. Check the cache
         if (cache.containsKey(breed)) {
             return cache.get(breed);
@@ -54,20 +49,25 @@ public class CachingBreedFetcher implements BreedFetcher {
 
         // 2. Not in cache, so call the underlying fetcher
         try {
-            // Increment the counter BEFORE making the call
+            // Increment the counter BEFORE making the call to the underlying fetcher
             callsMade++;
 
-            // Call the underlying fetcher (which may throw a checked exception)
-            List<String> subBreeds = underlyingFetcher.fetchSubBreeds(breed);
+            // Call the underlying fetcher (which may throw the checked exception)
+            List<String> subBreeds = underlyingFetcher.getSubBreeds(breed);
 
             // 3. Successful result: cache the result and return it
             cache.put(breed, subBreeds);
             return subBreeds;
 
         } catch (BreedFetcher.BreedNotFoundException e) {
-            // 4. Exception occurred: do NOT cache the failed result, just re-throw the exception
+            // 4. Exception occurred: do NOT cache the failed result, just re-throw the checked exception
             throw e;
         }
+    }
+
+    @Override
+    public List<String> fetchSubBreeds(String breed) throws BreedNotFoundException {
+        return List.of();
     }
 
     /**
