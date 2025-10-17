@@ -7,7 +7,7 @@ import java.util.List;
  */
 public interface BreedFetcher {
 
-    List<String> getSubBreeds(String breed);
+    List<String> getSubBreeds(String breed) throws BreedNotFoundException;
 
     /**
      * Fetch the list of sub breeds for the given breed.
